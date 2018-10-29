@@ -7,9 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		49E051832186441E00EA7FD6 /* NewMessageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E051822186441E00EA7FD6 /* NewMessageController.swift */; };
+		49E051862186485300EA7FD6 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E051852186485300EA7FD6 /* User.swift */; };
+		49E051882186578300EA7FD6 /* LoginController+handlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E051872186578300EA7FD6 /* LoginController+handlers.swift */; };
+		49E0518B21871D9B00EA7FD6 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E0518A21871D9B00EA7FD6 /* Extensions.swift */; };
+		49E0518D2187AA2200EA7FD6 /* ChatLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E0518C2187AA2200EA7FD6 /* ChatLogController.swift */; };
 		4C6C4EACE7D932555CD61763 /* Pods_GameOfChats.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E783EB28E779733F368078B9 /* Pods_GameOfChats.framework */; };
 		9DE5CEFA217FA1880051C761 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE5CEF9217FA1880051C761 /* AppDelegate.swift */; };
-		9DE5CEFC217FA1880051C761 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE5CEFB217FA1880051C761 /* ViewController.swift */; };
+		9DE5CEFC217FA1880051C761 /* MessagesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE5CEFB217FA1880051C761 /* MessagesController.swift */; };
 		9DE5CEFF217FA1880051C761 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9DE5CEFD217FA1880051C761 /* Main.storyboard */; };
 		9DE5CF01217FA1880051C761 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9DE5CF00217FA1880051C761 /* Assets.xcassets */; };
 		9DE5CF04217FA1880051C761 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9DE5CF02217FA1880051C761 /* LaunchScreen.storyboard */; };
@@ -18,9 +23,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		49E051822186441E00EA7FD6 /* NewMessageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMessageController.swift; sourceTree = "<group>"; };
+		49E051852186485300EA7FD6 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		49E051872186578300EA7FD6 /* LoginController+handlers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginController+handlers.swift"; sourceTree = "<group>"; };
+		49E0518A21871D9B00EA7FD6 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		49E0518C2187AA2200EA7FD6 /* ChatLogController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLogController.swift; sourceTree = "<group>"; };
 		9DE5CEF6217FA1880051C761 /* GameOfChats.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GameOfChats.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DE5CEF9217FA1880051C761 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		9DE5CEFB217FA1880051C761 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		9DE5CEFB217FA1880051C761 /* MessagesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesController.swift; sourceTree = "<group>"; };
 		9DE5CEFE217FA1880051C761 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9DE5CF00217FA1880051C761 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9DE5CF03217FA1880051C761 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -53,6 +63,22 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		49E051842186483E00EA7FD6 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				49E051852186485300EA7FD6 /* User.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		49E0518921871D8A00EA7FD6 /* Utility */ = {
+			isa = PBXGroup;
+			children = (
+				49E0518A21871D9B00EA7FD6 /* Extensions.swift */,
+			);
+			path = Utility;
+			sourceTree = "<group>";
+		};
 		7D0156A47C485D823FE0FDE3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -82,6 +108,8 @@
 		9DE5CEF8217FA1880051C761 /* GameOfChats */ = {
 			isa = PBXGroup;
 			children = (
+				49E0518921871D8A00EA7FD6 /* Utility */,
+				49E051842186483E00EA7FD6 /* Model */,
 				9DE5CF0B217FA4070051C761 /* Controllers */,
 				9DE5CEF9217FA1880051C761 /* AppDelegate.swift */,
 				9DE5CEFD217FA1880051C761 /* Main.storyboard */,
@@ -97,7 +125,10 @@
 			isa = PBXGroup;
 			children = (
 				9DE5CF0C217FA4190051C761 /* LoginController.swift */,
-				9DE5CEFB217FA1880051C761 /* ViewController.swift */,
+				9DE5CEFB217FA1880051C761 /* MessagesController.swift */,
+				49E051822186441E00EA7FD6 /* NewMessageController.swift */,
+				49E051872186578300EA7FD6 /* LoginController+handlers.swift */,
+				49E0518C2187AA2200EA7FD6 /* ChatLogController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -238,9 +269,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9DE5CEFC217FA1880051C761 /* ViewController.swift in Sources */,
+				49E0518D2187AA2200EA7FD6 /* ChatLogController.swift in Sources */,
+				49E051832186441E00EA7FD6 /* NewMessageController.swift in Sources */,
+				9DE5CEFC217FA1880051C761 /* MessagesController.swift in Sources */,
+				49E051882186578300EA7FD6 /* LoginController+handlers.swift in Sources */,
 				9DE5CF0D217FA4190051C761 /* LoginController.swift in Sources */,
+				49E051862186485300EA7FD6 /* User.swift in Sources */,
 				9DE5CEFA217FA1880051C761 /* AppDelegate.swift in Sources */,
+				49E0518B21871D9B00EA7FD6 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
