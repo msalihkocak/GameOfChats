@@ -66,4 +66,15 @@ class Message: NSObject {
             self.init()
         }
     }
+    
+    func chatPartnerId() -> String{
+        let chatPartnerId: String?
+        if fromId == Auth.auth().currentUser?.uid{
+            chatPartnerId = toId
+        }else{
+            chatPartnerId = fromId
+        }
+        guard let id = chatPartnerId else{ return "" }
+        return id
+    }
 }

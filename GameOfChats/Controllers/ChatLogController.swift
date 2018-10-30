@@ -11,9 +11,32 @@ import Firebase
 
 class ChatLogController: UICollectionViewController,UITextFieldDelegate {
     
+    var messages = [Message]()
+    let cellId = "bubbleCellId"
+    
     var selectedChatUser: User? {
         didSet {
             navigationItem.title = selectedChatUser!.name
+            observeMessages()
+        }
+    }
+    
+    func observeMessages(){
+        guard let selectedUser = selectedChatUser else{ return }
+        guard let id = Auth.auth().currentUser?.uid else { return }
+        let userMessagesRef = Database.database().reference().child("user-messages").child(id)
+        userMessagesRef.observe(.childAdded) { (snapshot) in
+            let messageId = snapshot.key
+            let messageRef = Database.database().reference().child("messages").child(messageId)
+            messageRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                let message = Message(snapshot:snapshot)
+                if message.chatPartnerId() == selectedUser.id{
+                    self.messages.append(message)
+                    self.collectionView?.reloadData()
+                    let indexpath = IndexPath(row: self.messages.count - 1, section: 0)
+                    self.collectionView?.scrollToItem(at: indexpath, at: .bottom, animated: true)
+                }
+            })
         }
     }
     
@@ -74,18 +97,36 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
         return textField
     }()
     
+    var bottomBarBottomConstraint: NSLayoutConstraint?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         collectionView?.backgroundColor = UIColor.white
+        collectionView?.register(MessageBubbleCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView?.keyboardDismissMode = .onDrag
+        collectionView?.alwaysBounceVertical = true
         
         view.addSubview(bottomToolbarView)
         setupBottomToolbarView()
+        
+        setupCollectionView()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(notification:)), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
+    }
+    
+    func setupCollectionView(){
+        collectionView?.translatesAutoresizingMaskIntoConstraints = false
+        collectionView?.bottomAnchor.constraint(equalTo: bottomToolbarView.topAnchor).isActive = true
+        collectionView?.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        collectionView?.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        collectionView?.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
     }
     
     func setupBottomToolbarView(){
         bottomToolbarView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        bottomToolbarView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        bottomBarBottomConstraint = bottomToolbarView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        bottomBarBottomConstraint?.isActive = true
         bottomToolbarView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         bottomToolbarView.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
@@ -134,5 +175,40 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
             }
         }
         return true
+    }
+    
+    @objc func keyboardWasShown(notification: NSNotification) {
+        let info = notification.userInfo!
+        let keyboardFrame: CGRect = (info[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+        
+        UIView.animate(withDuration: 0.1, animations: { () -> Void in
+            self.bottomBarBottomConstraint?.isActive = false
+            self.bottomBarBottomConstraint?.constant = -keyboardFrame.size.height
+            self.bottomBarBottomConstraint?.isActive = true
+        })
+    }
+}
+
+extension ChatLogController: UICollectionViewDelegateFlowLayout{
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! MessageBubbleCell
+        cell.message = messages[indexPath.row]
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.width, height: 40)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 2
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 2
     }
 }

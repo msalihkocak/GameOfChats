@@ -34,14 +34,7 @@ class MessagesController: UITableViewController {
             let messageRef = Database.database().reference().child("messages").child(messageId)
             messageRef.observeSingleEvent(of: .value, with: { (snapshot) in
                 let message = Message(snapshot: snapshot)
-                let chatPartnerId: String?
-                if message.fromId == Auth.auth().currentUser?.uid{
-                    chatPartnerId = message.toId
-                }else{
-                    chatPartnerId = message.fromId
-                }
-                guard let partnerId = chatPartnerId else{ return }
-                self.messagesDictionary[partnerId] = message
+                self.messagesDictionary[message.chatPartnerId()] = message
                 self.messages = Array(self.messagesDictionary.values)
                 self.messages.sort(by: { $0.timestamp.intValue > $1.timestamp.intValue })
                 self.tableView.reloadData()
@@ -161,6 +154,14 @@ extension MessagesController{
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! UserCell
         cell.message = messages[indexPath.row]
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let userRef = Database.database().reference().child("users").child(messages[indexPath.row].chatPartnerId())
+        userRef.observeSingleEvent(of: .value) { (snapshot) in
+            let user = User(snapshot:snapshot)
+            self.showChatControllerWithUser(user: user)
+        }
     }
 }
 
