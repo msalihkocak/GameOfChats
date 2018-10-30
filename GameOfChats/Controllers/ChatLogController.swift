@@ -11,6 +11,12 @@ import Firebase
 
 class ChatLogController: UICollectionViewController,UITextFieldDelegate {
     
+    var selectedChatUser: User? {
+        didSet {
+            navigationItem.title = selectedChatUser!.name
+        }
+    }
+    
     let bottomToolbarView: UIView = {
         let bottomView = UIView()
         bottomView.backgroundColor = UIColor(r: 245, g: 245, b: 245)
@@ -28,13 +34,29 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
     }()
     
     @objc func handleSend(){
-        sendButton.isUserInteractionEnabled = false
-        let ref = Database.database().reference().child("messages").childByAutoId()
+        guard let toUserId = selectedChatUser?.id else{ return }
+        guard let fromUserId = Auth.auth().currentUser?.uid else{ return }
         guard let messageBody = messageTextField.text else { return }
-        let values = ["text":messageBody]
-        ref.updateChildValues(values)
+        let timestamp:Int = Int(NSDate().timeIntervalSince1970)
+        
+        let messageRef = Database.database().reference().child("messages").childByAutoId()
+        
+        let values = ["text":messageBody, "fromId":fromUserId, "toId":toUserId, "timestamp":"\(timestamp)"]
+        messageRef.updateChildValues(values) { (error, returnRef) in
+            if error != nil{
+                print(error!.localizedDescription)
+                return
+            }
+            let userMessagesRef = Database.database().reference().child("user-messages")
+            let fromUserMessagesRef = userMessagesRef.child(fromUserId)
+            let toUserMessagesRef = userMessagesRef.child(toUserId)
+            
+            let messageId = messageRef.key
+            
+            fromUserMessagesRef.updateChildValues([messageId:1])
+            toUserMessagesRef.updateChildValues([messageId:1])
+        }
         messageTextField.text = ""
-        sendButton.isUserInteractionEnabled = true
     }
     
     lazy var messageTextField: UITextField = {
@@ -56,8 +78,6 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
         super.viewDidLoad()
         
         collectionView?.backgroundColor = UIColor.white
-        
-        navigationItem.title = "Chat Log Controller"
         
         view.addSubview(bottomToolbarView)
         setupBottomToolbarView()

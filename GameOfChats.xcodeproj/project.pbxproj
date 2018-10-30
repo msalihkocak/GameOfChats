@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		49097DEF21885263006F6276 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49097DEE21885263006F6276 /* Message.swift */; };
+		49097DF221887D05006F6276 /* UserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49097DF121887D05006F6276 /* UserCell.swift */; };
 		49E051832186441E00EA7FD6 /* NewMessageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E051822186441E00EA7FD6 /* NewMessageController.swift */; };
 		49E051862186485300EA7FD6 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E051852186485300EA7FD6 /* User.swift */; };
 		49E051882186578300EA7FD6 /* LoginController+handlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E051872186578300EA7FD6 /* LoginController+handlers.swift */; };
@@ -23,6 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		49097DEE21885263006F6276 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		49097DF121887D05006F6276 /* UserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserCell.swift; sourceTree = "<group>"; };
 		49E051822186441E00EA7FD6 /* NewMessageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMessageController.swift; sourceTree = "<group>"; };
 		49E051852186485300EA7FD6 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		49E051872186578300EA7FD6 /* LoginController+handlers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginController+handlers.swift"; sourceTree = "<group>"; };
@@ -63,10 +67,19 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		49097DF021887CF0006F6276 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				49097DF121887D05006F6276 /* UserCell.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		49E051842186483E00EA7FD6 /* Model */ = {
 			isa = PBXGroup;
 			children = (
 				49E051852186485300EA7FD6 /* User.swift */,
+				49097DEE21885263006F6276 /* Message.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -108,6 +121,7 @@
 		9DE5CEF8217FA1880051C761 /* GameOfChats */ = {
 			isa = PBXGroup;
 			children = (
+				49097DF021887CF0006F6276 /* Views */,
 				49E0518921871D8A00EA7FD6 /* Utility */,
 				49E051842186483E00EA7FD6 /* Model */,
 				9DE5CF0B217FA4070051C761 /* Controllers */,
@@ -272,10 +286,12 @@
 				49E0518D2187AA2200EA7FD6 /* ChatLogController.swift in Sources */,
 				49E051832186441E00EA7FD6 /* NewMessageController.swift in Sources */,
 				9DE5CEFC217FA1880051C761 /* MessagesController.swift in Sources */,
+				49097DEF21885263006F6276 /* Message.swift in Sources */,
 				49E051882186578300EA7FD6 /* LoginController+handlers.swift in Sources */,
 				9DE5CF0D217FA4190051C761 /* LoginController.swift in Sources */,
 				49E051862186485300EA7FD6 /* User.swift in Sources */,
 				9DE5CEFA217FA1880051C761 /* AppDelegate.swift in Sources */,
+				49097DF221887D05006F6276 /* UserCell.swift in Sources */,
 				49E0518B21871D9B00EA7FD6 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

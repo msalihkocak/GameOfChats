@@ -49,41 +49,16 @@ class NewMessageController: UITableViewController {
         return cell
     }
     
+    var messagesController: MessagesController?
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        dismiss(animated: true) {
+            self.messagesController?.showChatControllerWithUser(user: self.users[indexPath.row])
+        }
+    }
+    
     @objc func cancelNewMessage(){
         dismiss(animated: true, completion: nil)
     }
 
-}
-
-class UserCell: UITableViewCell{
-    
-    let profileImageView:UIImageView = {
-        let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.contentMode = .scaleAspectFill
-        imageView.layer.cornerRadius = 28
-        imageView.clipsToBounds = true
-        return imageView
-    }()
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        textLabel?.frame = CGRect(x: 76, y: textLabel!.frame.origin.y - 2, width: textLabel!.frame.width, height: textLabel!.frame.height)
-        detailTextLabel?.frame = CGRect(x: 76, y: detailTextLabel!.frame.origin.y + 2, width: detailTextLabel!.frame.width, height: detailTextLabel!.frame.height)
-    }
-    
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
-        super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
-        
-        addSubview(profileImageView)
-        
-        profileImageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 8).isActive = true
-        profileImageView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 56).isActive = true
-        profileImageView.heightAnchor.constraint(equalToConstant: 56).isActive = true
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
 }

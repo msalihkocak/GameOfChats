@@ -68,21 +68,24 @@ extension LoginController:UIImagePickerControllerDelegate, UINavigationControlle
                     guard let imageUrlString = metadata?.downloadURL()?.absoluteString else { return }
                     values["imageUrlString"] = imageUrlString
                 }
+                
                 self.registerUserToDatabaseWithUid(uid: uid, andValues: values as [String : AnyObject])
             })
         }
     }
     
     func registerUserToDatabaseWithUid(uid:String, andValues values:[String:AnyObject]){
-        let ref = Database.database().reference(fromURL: "https://gameofchats-6c7c0.firebaseio.com/")
+        let ref = Database.database().reference()
         let usersReference = ref.child("users").child(uid)
         usersReference.updateChildValues(values, withCompletionBlock: { (err, ref) in
             if err != nil{
                 print(err!.localizedDescription)
                 return
             }
-            
-            self.messagesVC?.setupNavBarWithUser(user: User(dict: values))
+            var userDict = values
+            userDict["id"] = uid as AnyObject
+            self.messagesVC?.setupNavBarWithUser(user: User(dict: userDict))
+            self.messagesVC?.resetUserMessages()
             self.dismiss(animated: true, completion: nil)
         })
     }
@@ -96,6 +99,7 @@ extension LoginController:UIImagePickerControllerDelegate, UINavigationControlle
                 return
             }
             self.messagesVC?.fetchUserCredentials()
+            self.messagesVC?.resetUserMessages()
             self.dismiss(animated: true, completion: nil)
         }
     }
