@@ -97,6 +97,16 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
         return textField
     }()
     
+    override var inputAccessoryView: UIView? {
+        get {
+            return bottomToolbarView
+        }
+    }
+    
+    override var canBecomeFirstResponder: Bool{
+        return true
+    }
+    
     var bottomBarBottomConstraint: NSLayoutConstraint?
     
     override func viewDidLoad() {
@@ -104,15 +114,21 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
         
         collectionView?.backgroundColor = UIColor.white
         collectionView?.register(MessageBubbleCell.self, forCellWithReuseIdentifier: cellId)
-        collectionView?.keyboardDismissMode = .onDrag
+        collectionView?.keyboardDismissMode = .interactive
         collectionView?.alwaysBounceVertical = true
+        collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
+        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
         
         view.addSubview(bottomToolbarView)
         setupBottomToolbarView()
         
-        setupCollectionView()
+        //setupCollectionView()
         
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(notification:)), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self)
     }
     
     func setupCollectionView(){
@@ -180,12 +196,16 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
     @objc func keyboardWasShown(notification: NSNotification) {
         let info = notification.userInfo!
         let keyboardFrame: CGRect = (info[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
+        let duration = info[UIKeyboardAnimationDurationUserInfoKey] as? Double
         
-        UIView.animate(withDuration: 0.1, animations: { () -> Void in
-            self.bottomBarBottomConstraint?.isActive = false
-            self.bottomBarBottomConstraint?.constant = -keyboardFrame.size.height
-            self.bottomBarBottomConstraint?.isActive = true
+        self.bottomBarBottomConstraint?.constant = -keyboardFrame.height
+        UIView.animate(withDuration: duration!, animations: { () -> Void in
+            self.view.layoutIfNeeded()
         })
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        collectionView?.collectionViewLayout.invalidateLayout()
     }
 }
 
@@ -197,18 +217,31 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout{
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! MessageBubbleCell
         cell.message = messages[indexPath.row]
+        if let user = selectedChatUser{
+            cell.fetchUserProfileImage(for: user)
+        }
+        cell.bubbleWidthAnchor?.constant = estimatedFrameForText(text: messages[indexPath.row].text).width + 32
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 40)
+        var height:CGFloat = 80
+        height =  estimatedFrameForText(text: messages[indexPath.row].text).height + 17
+        return CGSize(width: view.frame.width, height: height)
+    }
+    
+    private func estimatedFrameForText(text:String) -> CGRect{
+        let size = CGSize(width: 200, height: 1000)
+        let options = NSStringDrawingOptions.usesFontLeading.union(.usesLineFragmentOrigin)
+        
+        return NSString(string: text).boundingRect(with: size, options: options, attributes: [NSAttributedString.Key.font:UIFont.systemFont(ofSize: 16)], context: nil)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 2
+        return 6
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 2
+        return 6
     }
 }

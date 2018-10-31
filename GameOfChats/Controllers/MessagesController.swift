@@ -37,22 +37,16 @@ class MessagesController: UITableViewController {
                 self.messagesDictionary[message.chatPartnerId()] = message
                 self.messages = Array(self.messagesDictionary.values)
                 self.messages.sort(by: { $0.timestamp.intValue > $1.timestamp.intValue })
-                self.tableView.reloadData()
+                self.tableReloadTimer?.invalidate()
+                self.tableReloadTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false, block: { (timer) in
+                    print("Table reloaded with timer")
+                    self.tableView.reloadData()
+                })
             })
         }
     }
     
-    func observeMessages(){
-        let ref = Database.database().reference().child("messages")
-        ref.observe(.childAdded) { (snapshot) in
-            let message = Message(snapshot: snapshot)
-            //self.messages.append(message)
-            self.messagesDictionary[message.toId] = message
-            self.messages = Array(self.messagesDictionary.values)
-            self.messages.sort(by: { $0.timestamp.intValue > $1.timestamp.intValue })
-            self.tableView.reloadData()
-        }
-    }
+    var tableReloadTimer:Timer?
     
     func checkIfUserIsLoggedIn(){
         if Auth.auth().currentUser?.uid == nil{
@@ -65,10 +59,8 @@ class MessagesController: UITableViewController {
     func fetchUserCredentials(){
         guard let uid = Auth.auth().currentUser?.uid else{ return }
         Database.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
-            if let dictionary = snapshot.value as? [String:AnyObject]{
-                let user = User(snapshot: snapshot)
-                self.setupNavBarWithUser(user:user)
-            }
+            let user = User(snapshot: snapshot)
+            self.setupNavBarWithUser(user:user)
         }, withCancel: nil)
     }
     
