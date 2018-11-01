@@ -15,6 +15,10 @@ class Message: NSObject {
     var toId:String
     var text:String
     var timestamp:NSNumber
+    var imageUrl:String
+    
+    var imageWidth:NSNumber?
+    var imageHeight:NSNumber?
     
     override init() {
         self.id = ""
@@ -22,40 +26,65 @@ class Message: NSObject {
         self.toId = ""
         self.text = ""
         self.timestamp = 0
+        self.imageUrl = ""
     }
     
-    init(id:String, fromId:String, toId: String, text:String, timestamp:NSNumber){
+    init(id:String, fromId:String, toId: String, text:String, timestamp:NSNumber, imageUrl:String){
         self.id = id
         self.fromId = fromId
         self.toId = toId
         self.text = text
         self.timestamp = timestamp
+        self.imageUrl = imageUrl
     }
     
     convenience init(dict:[String:AnyObject]){
-        guard let id = dict["id"] as? String else {
-            self.init()
-            return
-        }
-        guard let fromId = dict["fromId"] as? String else {
-            self.init()
-            return
-        }
-        guard let toId = dict["toId"] as? String else {
-            self.init()
-            return
-        }
-        guard let text = dict["text"] as? String else {
-            self.init()
-            return
-        }
-        guard let timestampString = dict["timestamp"] as? String, let timestamp = Int(timestampString) else {
-            self.init()
-            return
+        self.init()
+        
+        if let id = dict["id"] as? String {
+            self.id = id
+        }else{
+            self.id = ""
         }
         
-        let tmstmp = NSNumber(integerLiteral: timestamp)
-        self.init(id: id, fromId: fromId, toId: toId, text: text, timestamp: tmstmp)
+        if let fromId = dict["fromId"] as? String {
+            self.fromId = fromId
+        }else{
+            self.fromId = ""
+        }
+        
+        if let toId = dict["toId"] as? String {
+            self.toId = toId
+        }else{
+            self.toId = ""
+            
+        }
+        
+        if let text = dict["text"] as? String {
+            self.text = text
+        }else{
+            self.text = ""
+        }
+        
+        if let timestampString = dict["timestamp"] as? String, let timestamp = Int(timestampString) {
+            let tmstmp = NSNumber(integerLiteral: timestamp)
+            self.timestamp = tmstmp
+        }else{
+            self.timestamp = 0
+        }
+        
+        if let url = dict["imageUrl"] as? String{
+            self.imageUrl = url
+        }else{
+            self.imageUrl = ""
+        }
+
+        if let widthStr = dict["imageWidth"] as? String, let width = Double(widthStr){
+            self.imageWidth = NSNumber(floatLiteral: width)
+        }
+        if let heightStr = dict["imageHeight"] as? String, let height = Double(heightStr){
+            self.imageHeight = NSNumber(floatLiteral: height)
+        }
     }
     
     convenience init(snapshot:DataSnapshot){

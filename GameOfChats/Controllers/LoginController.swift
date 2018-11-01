@@ -141,7 +141,7 @@ class LoginController: UIViewController {
     func setupLoginRegisterButton(){
         // need x, y, width, height constraints
         loginRegisterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        loginRegisterButton.topAnchor.constraintEqualToSystemSpacingBelow(inputsContainerView.bottomAnchor, multiplier: 1.2).isActive = true
+        loginRegisterButton.topAnchor.constraint(equalToSystemSpacingBelow: inputsContainerView.bottomAnchor, multiplier: 1.2).isActive = true
         loginRegisterButton.widthAnchor.constraint(equalTo: inputsContainerView.widthAnchor).isActive = true
         loginRegisterButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
     }
@@ -157,7 +157,7 @@ class LoginController: UIViewController {
         passwordTextField.topAnchor.constraint(equalTo: mailSeperator.bottomAnchor).isActive = true
         
         [nameTextField, mailTextField, passwordTextField].forEach {
-            $0.leftAnchor.constraintEqualToSystemSpacingAfter(inputsContainerView.leftAnchor, multiplier: 1.1).isActive = true
+            $0.leftAnchor.constraint(equalToSystemSpacingAfter: inputsContainerView.leftAnchor, multiplier: 1.1).isActive = true
             $0.widthAnchor.constraint(equalTo: inputsContainerView.widthAnchor, multiplier:0.95).isActive = true
         }
         

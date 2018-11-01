@@ -13,7 +13,17 @@ class MessageBubbleCell: UICollectionViewCell {
     
     var message:Message? {
         didSet{
-            messageTextLabel.text = message!.text
+            if message!.imageUrl != ""{
+                messageImageView.loadImageUsingCacheWithUrlString(urlString: message!.imageUrl)
+                messageTextLabel.text = ""
+                messageImageView.isHidden = false
+                messageTextLabel.isHidden = true
+            }else{
+                messageImageView.image = nil
+                messageTextLabel.text = message!.text
+                messageImageView.isHidden = true
+                messageTextLabel.isHidden = false
+            }
         }
     }
     
@@ -22,6 +32,7 @@ class MessageBubbleCell: UICollectionViewCell {
         textView.textColor = UIColor.white
         textView.font = UIFont.systemFont(ofSize: 16)
         textView.backgroundColor = UIColor.clear
+        textView.isEditable = false
         textView.translatesAutoresizingMaskIntoConstraints = false
         return textView
     }()
@@ -43,7 +54,15 @@ class MessageBubbleCell: UICollectionViewCell {
         imageView.layer.cornerRadius = 16
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
-        imageView.image = UIImage(named: "gameofthrones_splash")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    var messageImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.layer.cornerRadius = 16
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -65,10 +84,19 @@ class MessageBubbleCell: UICollectionViewCell {
         setupBubbleView()
         setupTextView()
         setupImageView()
+        setupMessageImageView()
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func setupMessageImageView(){
+        bubbleView.addSubview(messageImageView)
+        messageImageView.leftAnchor.constraint(equalTo: bubbleView.leftAnchor).isActive = true
+        messageImageView.widthAnchor.constraint(equalTo: bubbleView.widthAnchor).isActive = true
+        messageImageView.topAnchor.constraint(equalTo: bubbleView.topAnchor).isActive = true
+        messageImageView.heightAnchor.constraint(equalTo: bubbleView.heightAnchor).isActive = true
     }
     
     func setupImageView(){

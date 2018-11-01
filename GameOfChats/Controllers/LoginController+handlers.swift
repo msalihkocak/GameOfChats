@@ -18,7 +18,10 @@ extension LoginController:UIImagePickerControllerDelegate, UINavigationControlle
         present(picker, animated: true, completion: nil)
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+// Local variable inserted by Swift 4.2 migrator.
+let info = convertFromUIImagePickerControllerInfoKeyDictionary(info)
+
         var selectedImage: UIImage?
         if let editedImage = info["UIImagePickerControllerEditedImage"] as? UIImage{
             selectedImage = editedImage
@@ -58,7 +61,7 @@ extension LoginController:UIImagePickerControllerDelegate, UINavigationControlle
             guard let uid = user?.uid else{ return }
             
             let profileImagesRef = Storage.storage().reference().child("profile_images").child("user-\(uid).jpg")
-            guard let imageData = UIImageJPEGRepresentation(self.profileImageView.image!, 0.1) else { return }
+            guard let imageData = self.profileImageView.image!.jpegData(compressionQuality: 0.1) else { return }
             var values = ["name":name,"email":email]
             profileImagesRef.putData(imageData, metadata: nil, completion: { (metadata, error) in
                 if error != nil{
@@ -128,4 +131,9 @@ extension LoginController:UIImagePickerControllerDelegate, UINavigationControlle
             $0.resignFirstResponder()
         }
     }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+func convertFromUIImagePickerControllerInfoKeyDictionary(_ input: [UIImagePickerController.InfoKey: Any]) -> [String: Any] {
+	return Dictionary(uniqueKeysWithValues: input.map {key, value in (key.rawValue, value)})
 }

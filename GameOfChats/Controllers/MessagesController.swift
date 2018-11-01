@@ -25,14 +25,11 @@ class MessagesController: UITableViewController {
         tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
         
         checkIfUserIsLoggedIn()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
         observeUserMessages()
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        removeAllObserversFromAllNodes()
+    override func viewDidAppear(_ animated: Bool) {
+        //observeUserMessages()
     }
     
     func observeUserMessages(){
@@ -50,12 +47,14 @@ class MessagesController: UITableViewController {
         }
     }
     
-    func removeAllObserversFromAllNodes(){
+    func removeAllObserversFromAllNodes(except exceptUserId:String){
         guard let currentUserId = Auth.auth().currentUser?.uid else{ return }
         let myRef = Database.database().reference().child("user-messages").child(currentUserId)
         myRef.removeAllObservers()
         userIdsHavingConversationWith.forEach { (userId) in
-            myRef.child(userId).removeAllObservers()
+            if userId != exceptUserId{
+                myRef.child(userId).removeAllObservers()
+            }
         }
     }
     
@@ -183,6 +182,7 @@ extension MessagesController{
         let userRef = Database.database().reference().child("users").child(messages[indexPath.row].chatPartnerId())
         userRef.observeSingleEvent(of: .value) { (snapshot) in
             let user = User(snapshot:snapshot)
+            //self.removeAllObserversFromAllNodes(except: user.id)
             self.showChatControllerWithUser(user: user)
         }
     }

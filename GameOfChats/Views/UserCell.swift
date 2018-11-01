@@ -29,7 +29,12 @@ class UserCell: UITableViewCell{
         ref.observeSingleEvent(of: .value) { (snapshot) in
             let user = User(snapshot: snapshot)
             self.textLabel?.text = user.name
-            self.detailTextLabel?.text = self.message!.text
+            
+            if self.message?.imageUrl != ""{
+                self.detailTextLabel?.text = "📷 Ek"
+            }else{
+                self.detailTextLabel?.text = self.message!.text
+            }
             self.profileImageView.loadImageUsingCacheWithUrlString(urlString: user.imageUrlString)
         }
     }
@@ -59,7 +64,7 @@ class UserCell: UITableViewCell{
         detailTextLabel?.frame = CGRect(x: 80, y: detailTextLabel!.frame.origin.y + 2, width: detailTextLabel!.frame.width, height: detailTextLabel!.frame.height)
     }
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
         
         addSubview(profileImageView)
