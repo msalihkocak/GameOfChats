@@ -13,6 +13,7 @@ class MessagesController: UITableViewController {
     
     var messages = [Message]()
     var messagesDictionary = [String:Message]()
+    var userIdsHavingConversationWith = [String]()
     var cellId = "messageCellId"
 
     override func viewDidLoad() {
@@ -21,32 +22,62 @@ class MessagesController: UITableViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(handleNewMessage))
         
-        checkIfUserIsLoggedIn()
-        observeUserMessages()
         tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
+        
+        checkIfUserIsLoggedIn()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        observeUserMessages()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        removeAllObserversFromAllNodes()
     }
     
     func observeUserMessages(){
+        userIdsHavingConversationWith.removeAll(keepingCapacity: false)
         guard let currentUserId = Auth.auth().currentUser?.uid else{ return }
         let currentUserMessagesRef = Database.database().reference().child("user-messages").child(currentUserId)
         currentUserMessagesRef.observe(.childAdded) { (snapshot) in
-            let messageId = snapshot.key
-            let messageRef = Database.database().reference().child("messages").child(messageId)
-            messageRef.observeSingleEvent(of: .value, with: { (snapshot) in
-                let message = Message(snapshot: snapshot)
-                self.messagesDictionary[message.chatPartnerId()] = message
-                self.messages = Array(self.messagesDictionary.values)
-                self.messages.sort(by: { $0.timestamp.intValue > $1.timestamp.intValue })
-                self.tableReloadTimer?.invalidate()
-                self.tableReloadTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false, block: { (timer) in
-                    print("Table reloaded with timer")
-                    self.tableView.reloadData()
-                })
+            let toUserId = snapshot.key
+            self.userIdsHavingConversationWith.append(toUserId)
+            let toUserMessagesRef = currentUserMessagesRef.child(toUserId)
+            toUserMessagesRef.observe(.childAdded, with: { (snapshot) in
+                let messageId = snapshot.key
+                self.fetchMessage(withMessageId: messageId)
             })
         }
     }
     
+    func removeAllObserversFromAllNodes(){
+        guard let currentUserId = Auth.auth().currentUser?.uid else{ return }
+        let myRef = Database.database().reference().child("user-messages").child(currentUserId)
+        myRef.removeAllObservers()
+        userIdsHavingConversationWith.forEach { (userId) in
+            myRef.child(userId).removeAllObservers()
+        }
+    }
+    
+    func fetchMessage(withMessageId messageId:String){
+        let messageRef = Database.database().reference().child("messages").child(messageId)
+        messageRef.observeSingleEvent(of: .value, with: { (snapshot) in
+            let message = Message(snapshot: snapshot)
+            self.messagesDictionary[message.chatPartnerId()] = message
+            self.attemptToReloadData()
+        })
+    }
+    
     var tableReloadTimer:Timer?
+    
+    func attemptToReloadData(){
+        self.tableReloadTimer?.invalidate()
+        self.tableReloadTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false, block: { (timer) in
+            self.messages = Array(self.messagesDictionary.values)
+            self.messages.sort(by: { $0.timestamp.intValue > $1.timestamp.intValue })
+            self.tableView.reloadData()
+        })
+    }
     
     func checkIfUserIsLoggedIn(){
         if Auth.auth().currentUser?.uid == nil{

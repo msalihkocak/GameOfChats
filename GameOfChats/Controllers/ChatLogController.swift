@@ -24,28 +24,19 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
     func observeMessages(){
         guard let selectedUser = selectedChatUser else{ return }
         guard let id = Auth.auth().currentUser?.uid else { return }
-        let userMessagesRef = Database.database().reference().child("user-messages").child(id)
+        let userMessagesRef = Database.database().reference().child("user-messages").child(id).child(selectedUser.id)
         userMessagesRef.observe(.childAdded) { (snapshot) in
             let messageId = snapshot.key
             let messageRef = Database.database().reference().child("messages").child(messageId)
             messageRef.observeSingleEvent(of: .value, with: { (snapshot) in
                 let message = Message(snapshot:snapshot)
-                if message.chatPartnerId() == selectedUser.id{
-                    self.messages.append(message)
-                    self.collectionView?.reloadData()
-                    let indexpath = IndexPath(row: self.messages.count - 1, section: 0)
-                    self.collectionView?.scrollToItem(at: indexpath, at: .bottom, animated: true)
-                }
+                self.messages.append(message)
+                self.collectionView?.reloadData()
+                let indexpath = IndexPath(row: self.messages.count - 1, section: 0)
+                self.collectionView?.scrollToItem(at: indexpath, at: .bottom, animated: true)
             })
         }
     }
-    
-    let bottomToolbarView: UIView = {
-        let bottomView = UIView()
-        bottomView.backgroundColor = UIColor(r: 245, g: 245, b: 245)
-        bottomView.translatesAutoresizingMaskIntoConstraints = false
-        return bottomView
-    }()
     
     let sendButton: UIButton = {
         let button = UIButton(type: .system)
@@ -71,8 +62,8 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
                 return
             }
             let userMessagesRef = Database.database().reference().child("user-messages")
-            let fromUserMessagesRef = userMessagesRef.child(fromUserId)
-            let toUserMessagesRef = userMessagesRef.child(toUserId)
+            let fromUserMessagesRef = userMessagesRef.child(fromUserId).child(toUserId)
+            let toUserMessagesRef = userMessagesRef.child(toUserId).child(fromUserId)
             
             let messageId = messageRef.key
             
@@ -97,9 +88,21 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
         return textField
     }()
     
+    lazy var inputContainerView:UIView = {
+        let containerView = UIView()
+        containerView.frame = CGRect(x: 0, y: 0, width: 100, height: 50)
+        containerView.backgroundColor = UIColor(r: 245, g: 245, b: 245)
+        
+        setupInputContainerTopSeperatorInside(view:containerView)
+        setupSendButtonInside(view:containerView)
+        setupMessageTextFieldInside(view:containerView)
+        
+        return containerView
+    }()
+    
     override var inputAccessoryView: UIView? {
         get {
-            return bottomToolbarView
+            return inputContainerView
         }
     }
     
@@ -107,101 +110,52 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
         return true
     }
     
-    var bottomBarBottomConstraint: NSLayoutConstraint?
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupCollectionView()
+    }
+    
+    func setupCollectionView(){
         collectionView?.backgroundColor = UIColor.white
         collectionView?.register(MessageBubbleCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.keyboardDismissMode = .interactive
         collectionView?.alwaysBounceVertical = true
-        collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 58, right: 0)
-        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 50, right: 0)
-        
-        view.addSubview(bottomToolbarView)
-        setupBottomToolbarView()
-        
-        //setupCollectionView()
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown(notification:)), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
+        collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        NotificationCenter.default.removeObserver(self)
+    func setupSendButtonInside(view:UIView){
+        view.addSubview(sendButton)
+        sendButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: 8).isActive = true
+        sendButton.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        sendButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.2).isActive = true
+        sendButton.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
     }
     
-    func setupCollectionView(){
-        collectionView?.translatesAutoresizingMaskIntoConstraints = false
-        collectionView?.bottomAnchor.constraint(equalTo: bottomToolbarView.topAnchor).isActive = true
-        collectionView?.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        collectionView?.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        collectionView?.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+    func setupMessageTextFieldInside(view:UIView){
+        view.addSubview(messageTextField)
+        messageTextField.rightAnchor.constraint(equalTo: sendButton.leftAnchor, constant: 8).isActive = true
+        messageTextField.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        messageTextField.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8).isActive = true
+        messageTextField.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier:0.7).isActive = true
     }
     
-    func setupBottomToolbarView(){
-        bottomToolbarView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        bottomBarBottomConstraint = bottomToolbarView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        bottomBarBottomConstraint?.isActive = true
-        bottomToolbarView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        bottomToolbarView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        
+    func setupInputContainerTopSeperatorInside(view:UIView){
         // Top Seperator View
         let seperator = UIView()
         seperator.translatesAutoresizingMaskIntoConstraints = false
         seperator.backgroundColor = UIColor(r: 235, g: 235, b: 235)
-        bottomToolbarView.addSubview(seperator)
         
-        seperator.leftAnchor.constraint(equalTo: bottomToolbarView.leftAnchor).isActive = true
-        seperator.rightAnchor.constraint(equalTo: bottomToolbarView.rightAnchor).isActive = true
-        seperator.topAnchor.constraint(equalTo: bottomToolbarView.topAnchor).isActive = true
+        view.addSubview(seperator)
+        seperator.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        seperator.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        seperator.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         seperator.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        
-        bottomToolbarView.addSubview(sendButton)
-        setupSendButton()
-        bottomToolbarView.addSubview(messageTextField)
-        setupMessageTextField()
-    }
-    
-    func setupSendButton(){
-        sendButton.rightAnchor.constraint(equalTo: bottomToolbarView.rightAnchor, constant: 8).isActive = true
-        sendButton.centerYAnchor.constraint(equalTo: bottomToolbarView.centerYAnchor).isActive = true
-        sendButton.widthAnchor.constraint(equalTo: bottomToolbarView.widthAnchor, multiplier: 0.2).isActive = true
-        sendButton.heightAnchor.constraint(equalTo: bottomToolbarView.heightAnchor).isActive = true
-    }
-    
-    func setupMessageTextField(){
-        messageTextField.rightAnchor.constraint(equalTo: sendButton.leftAnchor, constant: 8).isActive = true
-        messageTextField.centerYAnchor.constraint(equalTo: bottomToolbarView.centerYAnchor).isActive = true
-        messageTextField.leftAnchor.constraint(equalTo: bottomToolbarView.leftAnchor, constant: 8).isActive = true
-        messageTextField.heightAnchor.constraint(equalTo: bottomToolbarView.heightAnchor, multiplier:0.7).isActive = true
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         handleSend()
         return true
-    }
-    
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        if let text = textField.text{
-            if text.count > 0{
-                sendButton.isUserInteractionEnabled = true
-            }else{
-                sendButton.isUserInteractionEnabled = false
-            }
-        }
-        return true
-    }
-    
-    @objc func keyboardWasShown(notification: NSNotification) {
-        let info = notification.userInfo!
-        let keyboardFrame: CGRect = (info[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
-        let duration = info[UIKeyboardAnimationDurationUserInfoKey] as? Double
-        
-        self.bottomBarBottomConstraint?.constant = -keyboardFrame.height
-        UIView.animate(withDuration: duration!, animations: { () -> Void in
-            self.view.layoutIfNeeded()
-        })
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -220,14 +174,28 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout{
         if let user = selectedChatUser{
             cell.fetchUserProfileImage(for: user)
         }
-        cell.bubbleWidthAnchor?.constant = estimatedFrameForText(text: messages[indexPath.row].text).width + 32
+        
+        setupCellBubbles(for: cell, and: messages[indexPath.row])
         return cell
+    }
+    
+    func setupCellBubbles(for cell:MessageBubbleCell, and message:Message){
+        if message.fromId == Auth.auth().currentUser?.uid{
+            cell.bubbleView.backgroundColor = MessageBubbleCell.blueColor
+            cell.messageTextLabel.textColor = UIColor.white
+            cell.hideProfileImage()
+        }else{
+            cell.bubbleView.backgroundColor = MessageBubbleCell.grayColor
+            cell.messageTextLabel.textColor = UIColor.black
+            cell.showProfileImage()
+        }
+        cell.bubbleWidthAnchor?.constant = estimatedFrameForText(text: message.text).width + 32
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         var height:CGFloat = 80
         height =  estimatedFrameForText(text: messages[indexPath.row].text).height + 17
-        return CGSize(width: view.frame.width, height: height)
+        return CGSize(width: UIScreen.main.bounds.width, height: height)
     }
     
     private func estimatedFrameForText(text:String) -> CGRect{
@@ -235,10 +203,6 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout{
         let options = NSStringDrawingOptions.usesFontLeading.union(.usesLineFragmentOrigin)
         
         return NSString(string: text).boundingRect(with: size, options: options, attributes: [NSAttributedString.Key.font:UIFont.systemFont(ofSize: 16)], context: nil)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 6
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {

@@ -14,23 +14,6 @@ class MessageBubbleCell: UICollectionViewCell {
     var message:Message? {
         didSet{
             messageTextLabel.text = message!.text
-            if message!.fromId == Auth.auth().currentUser?.uid{
-                //messageTextLabel.textAlignment = .right
-                //backgroundColor = UIColor.blue.withAlphaComponent(0.01)
-                bubbleView.backgroundColor = MessageBubbleCell.blueColor
-                messageTextLabel.textColor = UIColor.white
-                profileImageView.isHidden = true
-                bubbleRightAnchor?.isActive = true
-                bubbleLeftAnchor?.isActive = false
-            }else{
-                //messageTextLabel.textAlignment = .left
-                //backgroundColor = UIColor.red.withAlphaComponent(0.01)
-                bubbleView.backgroundColor = MessageBubbleCell.grayColor
-                messageTextLabel.textColor = UIColor.black
-                profileImageView.isHidden = false
-                bubbleRightAnchor?.isActive = false
-                bubbleLeftAnchor?.isActive = true
-            }
         }
     }
     
@@ -69,6 +52,9 @@ class MessageBubbleCell: UICollectionViewCell {
     var bubbleRightAnchor: NSLayoutConstraint?
     var bubbleLeftAnchor: NSLayoutConstraint?
     
+    var profileLeftAnchor: NSLayoutConstraint?
+    var profileWidthAnchor: NSLayoutConstraint?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -86,24 +72,39 @@ class MessageBubbleCell: UICollectionViewCell {
     }
     
     func setupImageView(){
-        profileImageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 8).isActive = true
+        profileLeftAnchor = profileImageView.leftAnchor.constraint(equalTo: leftAnchor, constant: 8)
+        profileLeftAnchor?.isActive = true
+        
         profileImageView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 32).isActive = true
+        
+        profileWidthAnchor = profileImageView.widthAnchor.constraint(equalToConstant: 32)
+        profileWidthAnchor?.isActive = true
+        
         profileImageView.heightAnchor.constraint(equalToConstant: 32).isActive = true
+    }
+    
+    func showProfileImage(){
+        bubbleRightAnchor?.isActive = false
+        profileLeftAnchor?.isActive = true
+        profileWidthAnchor?.constant = 32
+        bubbleLeftAnchor?.isActive = true
+    }
+    
+    func hideProfileImage(){
+        profileLeftAnchor?.isActive = false
+        profileWidthAnchor?.constant = 0
+        bubbleLeftAnchor?.isActive = false
+        bubbleRightAnchor?.isActive = true
     }
     
     func setupBubbleView(){
         bubbleRightAnchor = bubbleView.rightAnchor.constraint(equalTo: rightAnchor, constant: -8)
-        bubbleRightAnchor?.isActive = true
-        
         bubbleLeftAnchor = bubbleView.leftAnchor.constraint(equalTo: profileImageView.rightAnchor, constant: 8)
-        bubbleLeftAnchor?.isActive = false
-        
-        bubbleView.topAnchor.constraint(equalTo: topAnchor).isActive = true
         
         bubbleWidthAnchor = bubbleView.widthAnchor.constraint(equalToConstant: 200)
         bubbleWidthAnchor?.isActive = true
         
+        bubbleView.topAnchor.constraint(equalTo: topAnchor).isActive = true
         bubbleView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
     }
     
