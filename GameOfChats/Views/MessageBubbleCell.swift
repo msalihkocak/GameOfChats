@@ -11,6 +11,8 @@ import Firebase
 
 class MessageBubbleCell: UICollectionViewCell {
     
+    var chatLogController: ChatLogController?
+    
     var message:Message? {
         didSet{
             if message!.imageUrl != ""{
@@ -58,11 +60,13 @@ class MessageBubbleCell: UICollectionViewCell {
         return imageView
     }()
     
-    var messageImageView: UIImageView = {
+    lazy var messageImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.layer.cornerRadius = 16
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
+        imageView.isUserInteractionEnabled = true
+        imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleZoomTap)))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -141,6 +145,12 @@ class MessageBubbleCell: UICollectionViewCell {
         messageTextLabel.leftAnchor.constraint(equalTo: bubbleView.leftAnchor, constant: 8).isActive = true
         messageTextLabel.topAnchor.constraint(equalTo: topAnchor).isActive = true
         messageTextLabel.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+    }
+    
+    @objc func handleZoomTap(tapGesture:UITapGestureRecognizer){
+        //PRO Tip: Don't perform a lot of custom logic inside of a view class
+        guard let imageView = tapGesture.view as? UIImageView else{ return }
+        self.chatLogController?.performZoomInForImageView(imageToZoomIn: imageView)
     }
     
     func fetchUserProfileImage(for user:User){

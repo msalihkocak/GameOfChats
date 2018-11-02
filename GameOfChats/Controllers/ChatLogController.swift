@@ -8,6 +8,8 @@
 
 import UIKit
 import Firebase
+import MobileCoreServices
+import AVFoundation
 
 class ChatLogController: UICollectionViewController,UITextFieldDelegate {
     
@@ -136,6 +138,7 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
         let picker = UIImagePickerController()
         picker.delegate = self
         picker.allowsEditing = true
+        picker.mediaTypes = [kUTTypeImage, kUTTypeMovie] as [String]
         present(picker, animated: true, completion: nil)
     }
     
@@ -223,6 +226,59 @@ class ChatLogController: UICollectionViewController,UITextFieldDelegate {
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         collectionView?.collectionViewLayout.invalidateLayout()
     }
+    
+    var startingFrame: CGRect?
+    var blackBackgroundView: UIView?
+    var startingImageView:UIImageView?
+    
+    func performZoomInForImageView(imageToZoomIn:UIImageView){
+        self.messageTextField.resignFirstResponder()
+        startingImageView = imageToZoomIn
+        startingImageView?.alpha = 0
+        
+        startingFrame = imageToZoomIn.superview?.convert(imageToZoomIn.frame, to: nil)
+        guard let keyWindow = UIApplication.shared.keyWindow else{ return }
+        
+        blackBackgroundView = UIView(frame: CGRect(x: 0, y: 0, width: keyWindow.frame.width, height: keyWindow.frame.height))
+        blackBackgroundView?.backgroundColor = .black
+        blackBackgroundView?.alpha = 0
+        keyWindow.addSubview(blackBackgroundView!)
+        
+        let zoomingImageView = UIImageView(frame: startingFrame!)
+        zoomingImageView.backgroundColor = UIColor.red
+        zoomingImageView.image = imageToZoomIn.image
+        zoomingImageView.layer.cornerRadius = 16
+        zoomingImageView.clipsToBounds = true
+        zoomingImageView.isUserInteractionEnabled = true
+        zoomingImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(performZoomOutFromImage(tapGesture:))))
+        
+        keyWindow.addSubview(zoomingImageView)
+        
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            let height = (self.startingFrame!.height / self.startingFrame!.width) * keyWindow.frame.width
+            zoomingImageView.frame = CGRect(x: 0, y: 0, width: keyWindow.frame.width, height: height)
+            zoomingImageView.center = keyWindow.center
+            
+            zoomingImageView.layer.cornerRadius = 0
+            self.blackBackgroundView?.alpha = 1
+            self.inputContainerView.alpha = 0
+            
+        }, completion: nil)
+    }
+    
+    @objc func performZoomOutFromImage(tapGesture:UITapGestureRecognizer){
+        guard let zoomingImageView = tapGesture.view as? UIImageView else{ return }
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            zoomingImageView.frame = self.startingFrame!
+            
+            zoomingImageView.layer.cornerRadius = 16
+            self.blackBackgroundView?.alpha = 0
+            self.inputContainerView.alpha = 1
+        }, completion: { (completed) in
+            zoomingImageView.removeFromSuperview()
+            self.startingImageView?.alpha = 1
+        })
+    }
 }
 
 extension ChatLogController: UICollectionViewDelegateFlowLayout{
@@ -232,12 +288,14 @@ extension ChatLogController: UICollectionViewDelegateFlowLayout{
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! MessageBubbleCell
-        cell.message = messages[indexPath.row]
         setupCellBubbles(for: cell, and: messages[indexPath.row])
         return cell
     }
     
     func setupCellBubbles(for cell:MessageBubbleCell, and message:Message){
+        cell.message = message
+        cell.chatLogController = self
+        
         if let user = selectedChatUser{
             cell.fetchUserProfileImage(for: user)
         }
