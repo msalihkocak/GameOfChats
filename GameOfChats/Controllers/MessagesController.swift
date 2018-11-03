@@ -23,13 +23,10 @@ class MessagesController: UITableViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(handleNewMessage))
         
         tableView.register(UserCell.self, forCellReuseIdentifier: cellId)
+        tableView.allowsMultipleSelectionDuringEditing = true
         
         checkIfUserIsLoggedIn()
         observeUserMessages()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        //observeUserMessages()
     }
     
     func observeUserMessages(){
@@ -44,6 +41,12 @@ class MessagesController: UITableViewController {
                 let messageId = snapshot.key
                 self.fetchMessage(withMessageId: messageId)
             })
+        }
+        
+        currentUserMessagesRef.observe(.childRemoved) { (snapshot) in
+            let partnerId = snapshot.key
+            self.messagesDictionary.removeValue(forKey: partnerId)
+            self.attemptToReloadData()
         }
     }
     
@@ -162,6 +165,7 @@ class MessagesController: UITableViewController {
     }
 }
 
+// MARK: TableView Delegate Methods
 extension MessagesController{
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -184,6 +188,24 @@ extension MessagesController{
             let user = User(snapshot:snapshot)
             //self.removeAllObserversFromAllNodes(except: user.id)
             self.showChatControllerWithUser(user: user)
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        guard let uid = Auth.auth().currentUser?.uid else{ return }
+        let selectedPartnerId = self.messages[indexPath.row].chatPartnerId()
+        Database.database().reference().child("user-messages").child(uid).child(selectedPartnerId).removeValue { (error, ref) in
+            if let err = error{
+                print(err.localizedDescription)
+                return
+            }
+            
+            self.messagesDictionary.removeValue(forKey: selectedPartnerId)
+            self.attemptToReloadData()
         }
     }
 }

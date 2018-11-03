@@ -31,7 +31,7 @@ class UserCell: UITableViewCell{
             self.textLabel?.text = user.name
             
             if self.message?.imageUrl != ""{
-                self.detailTextLabel?.text = "📷 Ek"
+                self.detailTextLabel?.text = "📷 Media"
             }else{
                 self.detailTextLabel?.text = self.message!.text
             }

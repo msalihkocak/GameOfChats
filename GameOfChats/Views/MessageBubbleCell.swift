@@ -189,7 +189,6 @@ class MessageBubbleCell: UICollectionViewCell {
         player?.play()
         activityIndicatorView.startAnimating()
         playVideoButton.isHidden = true
-        //if player?.
     }
     
     override func prepareForReuse() {
