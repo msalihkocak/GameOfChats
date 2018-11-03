@@ -16,6 +16,7 @@ class Message: NSObject {
     var text:String
     var timestamp:NSNumber
     var imageUrl:String
+    var videoUrl:String
     
     var imageWidth:NSNumber?
     var imageHeight:NSNumber?
@@ -27,15 +28,17 @@ class Message: NSObject {
         self.text = ""
         self.timestamp = 0
         self.imageUrl = ""
+        self.videoUrl = ""
     }
     
-    init(id:String, fromId:String, toId: String, text:String, timestamp:NSNumber, imageUrl:String){
+    init(id:String, fromId:String, toId: String, text:String, timestamp:NSNumber, imageUrl:String, videoUrl:String){
         self.id = id
         self.fromId = fromId
         self.toId = toId
         self.text = text
         self.timestamp = timestamp
         self.imageUrl = imageUrl
+        self.videoUrl = videoUrl
     }
     
     convenience init(dict:[String:AnyObject]){
@@ -77,6 +80,12 @@ class Message: NSObject {
             self.imageUrl = url
         }else{
             self.imageUrl = ""
+        }
+        
+        if let url = dict["videoUrl"] as? String{
+            self.videoUrl = url
+        }else{
+            self.videoUrl = ""
         }
 
         if let widthStr = dict["imageWidth"] as? String, let width = Double(widthStr){

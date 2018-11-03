@@ -8,26 +8,12 @@
 
 import UIKit
 import Firebase
+import AVFoundation
 
 class MessageBubbleCell: UICollectionViewCell {
     
     var chatLogController: ChatLogController?
-    
-    var message:Message? {
-        didSet{
-            if message!.imageUrl != ""{
-                messageImageView.loadImageUsingCacheWithUrlString(urlString: message!.imageUrl)
-                messageTextLabel.text = ""
-                messageImageView.isHidden = false
-                messageTextLabel.isHidden = true
-            }else{
-                messageImageView.image = nil
-                messageTextLabel.text = message!.text
-                messageImageView.isHidden = true
-                messageTextLabel.isHidden = false
-            }
-        }
-    }
+    var message:Message?
     
     var messageTextLabel:UITextView = {
         let textView = UITextView()
@@ -71,6 +57,22 @@ class MessageBubbleCell: UICollectionViewCell {
         return imageView
     }()
     
+    lazy var playVideoButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(named: "play"), for: .normal)
+        button.addTarget(self, action: #selector(handlePlayVideoTap), for: .touchUpInside)
+        button.tintColor = UIColor.white
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    let activityIndicatorView: UIActivityIndicatorView = {
+        let aiview = UIActivityIndicatorView(style: .whiteLarge)
+        aiview.translatesAutoresizingMaskIntoConstraints = false
+        aiview.hidesWhenStopped = true
+        return aiview
+    }()
+    
     var bubbleWidthAnchor: NSLayoutConstraint?
     var bubbleRightAnchor: NSLayoutConstraint?
     var bubbleLeftAnchor: NSLayoutConstraint?
@@ -89,6 +91,7 @@ class MessageBubbleCell: UICollectionViewCell {
         setupTextView()
         setupImageView()
         setupMessageImageView()
+        setupVideoPlayButton()
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -101,6 +104,23 @@ class MessageBubbleCell: UICollectionViewCell {
         messageImageView.widthAnchor.constraint(equalTo: bubbleView.widthAnchor).isActive = true
         messageImageView.topAnchor.constraint(equalTo: bubbleView.topAnchor).isActive = true
         messageImageView.heightAnchor.constraint(equalTo: bubbleView.heightAnchor).isActive = true
+    }
+    
+    func setupVideoPlayButton(){
+        bubbleView.addSubview(playVideoButton)
+        playVideoButton.centerXAnchor.constraint(equalTo: bubbleView.centerXAnchor).isActive = true
+        playVideoButton.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor).isActive = true
+        playVideoButton.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        playVideoButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        setupActivityIndicatorView()
+    }
+    
+    func setupActivityIndicatorView(){
+        bubbleView.addSubview(activityIndicatorView)
+        activityIndicatorView.centerXAnchor.constraint(equalTo: bubbleView.centerXAnchor).isActive = true
+        activityIndicatorView.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor).isActive = true
+        activityIndicatorView.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        activityIndicatorView.heightAnchor.constraint(equalToConstant: 50).isActive = true
     }
     
     func setupImageView(){
@@ -148,15 +168,36 @@ class MessageBubbleCell: UICollectionViewCell {
     }
     
     @objc func handleZoomTap(tapGesture:UITapGestureRecognizer){
+        if message?.videoUrl != ""{
+            return
+        }
         //PRO Tip: Don't perform a lot of custom logic inside of a view class
         guard let imageView = tapGesture.view as? UIImageView else{ return }
         self.chatLogController?.performZoomInForImageView(imageToZoomIn: imageView)
     }
     
-    func fetchUserProfileImage(for user:User){
+    var playerLayer: AVPlayerLayer?
+    var player:AVPlayer?
+    
+    @objc func handlePlayVideoTap(){
         guard let msg = message else{ return }
-        if user.id == msg.fromId{
-            self.profileImageView.loadImageUsingCacheWithUrlString(urlString: user.imageUrlString)
-        }
+        guard let url = URL(string: msg.videoUrl) else{ return }
+        player = AVPlayer(url: url)
+        playerLayer = AVPlayerLayer(player: player)
+        playerLayer?.frame = bubbleView.bounds
+        bubbleView.layer.addSublayer(playerLayer!)
+        player?.play()
+        activityIndicatorView.startAnimating()
+        playVideoButton.isHidden = true
+        //if player?.
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        player?.pause()
+        playerLayer?.removeFromSuperlayer()
+        activityIndicatorView.stopAnimating()
+//        playerLayer = nil
+//        player = nil
     }
 }
